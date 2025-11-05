@@ -4,7 +4,6 @@ from botocore.exceptions import ClientError
 import json
 from bedrock_utils import query_knowledge_base, generate_response, valid_prompt
 
-
 # Streamlit UI
 st.title("Bedrock Chat Application")
 
@@ -30,20 +29,35 @@ if prompt := st.chat_input("What would you like to know?"):
     with st.chat_message("user"):
         st.markdown(prompt)
 
+    sources_output = ""
     if valid_prompt(prompt, model_id):
-        # Query Knowledge Base
-        kb_results = query_knowledge_base(prompt, kb_id)
-        
-        # Prepare context from Knowledge Base results
-        context = "\n".join([result['content']['text'] for result in kb_results])
-        
-        # Generate response using LLM
-        full_prompt = f"Context: {context}\n\nUser: {prompt}\n\n"
-        response = generate_response(full_prompt, model_id, temperature, top_p)
+        kb_response = query_knowledge_base(prompt, kb_id)
+        if kb_response:
+            answer = kb_response['output']['text']
+            citations = kb_response.get('citations', [])
+
+            sources_output += "\n\n**Sources:**\n"
+            if not citations:
+                sources_output += "No sources found for this answer."
+            else:
+                unique_sources = set()
+                for citation in citations:
+                    retrieved_reference = citation.get('retrievedReference', {})
+                    location = retrieved_reference.get('location', {})
+                    s3_location = location.get('s3Location', {})
+                    uri = s3_location.get('uri')
+                    if uri:
+                        unique_sources.add(uri)
+                for i, source_uri in enumerate(unique_sources):
+                    file_name = source_uri.split('/')[-1]
+                    sources_output += f"[{i+1}] {file_name}\n"
+
+            response = f"{answer}{sources_output}"
+        else:
+            response = "No response from knowledge base."
     else:
-        response = "I'm unable to answer this, please try again"
-    
-    # Display assistant response
+        response = "I can only answer questions about heavy machinery. Please ask a relevant question."
+
     with st.chat_message("assistant"):
         st.markdown(response)
     st.session_state.messages.append({"role": "assistant", "content": response})
