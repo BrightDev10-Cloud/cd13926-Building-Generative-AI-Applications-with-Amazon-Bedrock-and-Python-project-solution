@@ -1,7 +1,7 @@
 resource "aws_rds_cluster" "aurora_serverless" {
   cluster_identifier      = var.cluster_identifier
   engine                  = "aurora-postgresql"
-  engine_mode             = "provisioned"
+  engine_mode             = "serverless"
   engine_version          = var.engine_version
   database_name           = var.database_name
   master_username         = var.master_username
@@ -23,7 +23,7 @@ resource "aws_rds_cluster" "aurora_serverless" {
 
 resource "aws_rds_cluster_instance" "aurora_instance" {
   cluster_identifier = aws_rds_cluster.aurora_serverless.id
-  instance_class     = "db.t3.medium"
+  instance_class     = "db.serverless"
   engine             = aws_rds_cluster.aurora_serverless.engine
   engine_version     = aws_rds_cluster.aurora_serverless.engine_version
 }
