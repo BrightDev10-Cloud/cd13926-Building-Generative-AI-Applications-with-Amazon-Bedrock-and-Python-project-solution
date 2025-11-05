@@ -45,6 +45,7 @@ module "vpc" {
 module "aurora_serverless" {
   source = "../modules/database"
 
+  engine_version     = "15.3" # Explicitly set a known-good version
   cluster_identifier = "my-aurora-serverless"
   vpc_id             = module.vpc.vpc_id 
   subnet_ids         = module.vpc.private_subnets
