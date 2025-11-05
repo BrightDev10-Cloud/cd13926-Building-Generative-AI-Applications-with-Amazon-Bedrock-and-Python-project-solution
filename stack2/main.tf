@@ -12,7 +12,11 @@ provider "aws" {
 }
 
 data "terraform_remote_state" "stack1" {
-  name = "aws-bedrock-project"
+  backend = "remote"
+  config = {
+    organization = "studio-luxe"
+    name         = "aws-bedrock-project"
+  }
 }
 
 module "bedrock_kb" {
