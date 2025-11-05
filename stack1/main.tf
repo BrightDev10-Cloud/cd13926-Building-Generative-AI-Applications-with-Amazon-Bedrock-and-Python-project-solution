@@ -1,11 +1,10 @@
 terraform {
-  backend "s3" {
-    bucket         = "my-terraform-project-state-backend"
-    key            = "stack1/terraform.tfstate"
-    region         = "us-east-1" # CHANGE THIS to the region of your S3 bucket
-    dynamodb_table = "my-terraform-lock-table"
+  cloud {
+    organization = "studio-luxe"
+    workspaces {
+      name = "aws-bedrock-project"
+    }
   }
-
   required_providers {
     aws = {
       source = "hashicorp/aws"
