@@ -14,10 +14,8 @@ provider "aws" {
 data "terraform_remote_state" "stack1" {
   backend = "remote"
 
-  workspace {
-    organization = "studio-luxe"
-    name         = "aws-bedrock-project"
-  }
+  organization = "studio-luxe"
+  workspace    = "aws-bedrock-project"
 }
 
 module "bedrock_kb" {
