@@ -1,9 +1,9 @@
 terraform {
-  backend "s3" {
-    bucket         = "my-terraform-project-state-backend"
-    key            = "stack2/terraform.tfstate"
-    region         = "us-east-1" # CHANGE THIS to the region of your S3 bucket
-    dynamodb_table = "my-terraform-lock-table"
+  cloud {
+    organization = "studio-luxe"
+    workspaces {
+      name = "aws-bedrock-project-stack2"
+    }
   }
 }
 
@@ -12,11 +12,11 @@ provider "aws" {
 }
 
 data "terraform_remote_state" "stack1" {
-  backend = "s3"
-  config = {
-    bucket = "my-terraform-project-state-backend"
-    key    = "stack1/terraform.tfstate"
-    region = "us-east-1" # Must match the region of the S3 bucket
+  backend = "remote"
+
+  workspace {
+    organization = "studio-luxe"
+    name         = "aws-bedrock-project"
   }
 }
 
