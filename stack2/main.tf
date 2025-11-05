@@ -9,10 +9,6 @@ terraform {
 
 provider "aws" {
   region = "us-west-2"
-
-  assume_role {
-    role_arn = "arn:aws:iam::495613875687:role/TerraformExecutionRole"
-  }
 }
 
 data "terraform_remote_state" "stack1" {
