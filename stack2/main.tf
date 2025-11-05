@@ -1,25 +1,26 @@
 terraform {
-  cloud {
-    organization = "studio-luxe"
-
-    workspaces {
-      name = "aws-bedrock-project-stack2"
-    }
+  backend "s3" {
+    bucket         = "my-terraform-project-state-backend"
+    key            = "stack2/terraform.tfstate"
+    region         = "us-east-1" # CHANGE THIS to the region of your S3 bucket
+    dynamodb_table = "my-terraform-lock-table"
   }
 }
 
 provider "aws" {
   region = "us-west-2"
+
+  assume_role {
+    role_arn = "arn:aws:iam::495613875687:role/TerraformExecutionRole"
+  }
 }
 
 data "terraform_remote_state" "stack1" {
-  backend = "remote"
-
+  backend = "s3"
   config = {
-    organization = "studio-luxe"
-    workspaces = {
-      name = "aws-bedrock-project"
-    }
+    bucket = "my-terraform-project-state-backend"
+    key    = "stack1/terraform.tfstate"
+    region = "us-east-1" # Must match the region of the S3 bucket
   }
 }
 
@@ -36,7 +37,7 @@ module "bedrock_kb" {
   aurora_primary_key_field = "id"
   aurora_metadata_field = "metadata"
   aurora_text_field = "chunks"
-  aurora_verctor_field = "embedding"
+  aurora_vector_field = "embedding"
   aurora_username   = "dbadmin"
   aurora_secret_arn = data.terraform_remote_state.stack1.outputs.rds_secret_arn
   s3_bucket_arn = data.terraform_remote_state.stack1.outputs.s3_bucket_name

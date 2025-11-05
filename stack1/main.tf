@@ -1,11 +1,11 @@
 terraform {
-  cloud {
-    organization = "studio-luxe"
-
-    workspaces {
-      name = "aws-bedrock-project"
-    }
+  backend "s3" {
+    bucket         = "my-terraform-project-state-backend"
+    key            = "stack1/terraform.tfstate"
+    region         = "us-east-1" # CHANGE THIS to the region of your S3 bucket
+    dynamodb_table = "my-terraform-lock-table"
   }
+
   required_providers {
     aws = {
       source = "hashicorp/aws"
@@ -18,6 +18,10 @@ terraform {
 
 provider "aws" {
   region = "us-west-1"  # Change this to your desired region
+
+  assume_role {
+    role_arn = "arn:aws:iam::495613875687:role/TerraformExecutionRole"
+  }
 }
 
 module "vpc" {
