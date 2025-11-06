@@ -33,8 +33,18 @@ if prompt := st.chat_input("What would you like to know?"):
     if valid_prompt(prompt, model_id):
         kb_response = query_knowledge_base(prompt, kb_id)
         if kb_response:
-            answer = kb_response['output']['text']
             citations = kb_response.get('citations', [])
+            retrieval_results = kb_response.get('retrievalResults', [])
+            
+            context = ""
+            for retrieved_result in retrieval_results:
+                content = retrieved_result.get('content', {})
+                text = content.get('text')
+                if text:
+                    context += text + "\n"
+
+            llm_prompt = f"Using the following retrieved context, answer the question:\n\nContext:\n{context}\n\nQuestion: {prompt}"
+            answer = generate_response(llm_prompt, model_id, temperature, top_p)
 
             sources_output += "\n\n**Sources:**\n"
             if not citations:
