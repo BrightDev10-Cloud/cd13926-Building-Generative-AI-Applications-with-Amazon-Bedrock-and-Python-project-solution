@@ -16,7 +16,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-west-1"  # Change this to your desired region
+  region = "us-east-1"  # Change this to your desired region
 }
 
 module "vpc" {
