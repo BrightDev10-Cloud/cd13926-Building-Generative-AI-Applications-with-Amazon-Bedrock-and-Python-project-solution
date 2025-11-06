@@ -21,7 +21,7 @@ data "terraform_remote_state" "stack1" {
   }
 }
 
-module "bedrock_kb" {
+module  "bedrock_kb" {
   source = "../modules/bedrock_kb"
 
   knowledge_base_name        = "my-bedrock-kb"
