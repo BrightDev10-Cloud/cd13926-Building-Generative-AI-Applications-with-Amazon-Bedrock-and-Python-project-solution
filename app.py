@@ -10,7 +10,7 @@ st.title("Bedrock Chat Application")
 # Sidebar for configurations
 st.sidebar.header("Configuration")
 model_id = st.sidebar.selectbox("Select LLM Model", ["anthropic.claude-3-haiku-20240307-v1:0", "anthropic.claude-3-5-sonnet-20240620-v1:0"])
-kb_id = st.sidebar.text_input("Knowledge Base ID", "your-knowledge-base-id")
+kb_id = st.sidebar.text_input("Knowledge Base ID", "GSC0I5RRO5") #update with your knowledge base id after deployment
 temperature = st.sidebar.select_slider("Temperature", [i/10 for i in range(0,11)],1)
 top_p = st.sidebar.select_slider("Top_P", [i/1000 for i in range(0,1001)], 1)
 
@@ -31,33 +31,27 @@ if prompt := st.chat_input("What would you like to know?"):
 
     sources_output = ""
     if valid_prompt(prompt, model_id):
-        kb_response = query_knowledge_base(prompt, kb_id)
+        print(f"Using KB ID: {kb_id}") # Debug print for KB ID
+        kb_response = query_knowledge_base(prompt, kb_id, model_id)
+        print(f"KB Response: {kb_response}") # Debug print
         if kb_response:
+            answer = kb_response['output']['text']
             citations = kb_response.get('citations', [])
-            retrieval_results = kb_response.get('retrievalResults', [])
-            
-            context = ""
-            for retrieved_result in retrieval_results:
-                content = retrieved_result.get('content', {})
-                text = content.get('text')
-                if text:
-                    context += text + "\n"
-
-            llm_prompt = f"Using the following retrieved context, answer the question:\n\nContext:\n{context}\n\nQuestion: {prompt}"
-            answer = generate_response(llm_prompt, model_id, temperature, top_p)
 
             sources_output += "\n\n**Sources:**\n"
             if not citations:
                 sources_output += "No sources found for this answer."
             else:
                 unique_sources = set()
+                # MODIFIED: Nested loop to correctly extract URIs from retrievedReferences
                 for citation in citations:
-                    retrieved_reference = citation.get('retrievedReference', {})
-                    location = retrieved_reference.get('location', {})
-                    s3_location = location.get('s3Location', {})
-                    uri = s3_location.get('uri')
-                    if uri:
-                        unique_sources.add(uri)
+                    retrieved_references = citation.get('retrievedReferences', [])
+                    for retrieved_reference in retrieved_references:
+                        location = retrieved_reference.get('location', {})
+                        s3_location = location.get('s3Location', {})
+                        uri = s3_location.get('uri')
+                        if uri:
+                            unique_sources.add(uri)
                 for i, source_uri in enumerate(unique_sources):
                     file_name = source_uri.split('/')[-1]
                     sources_output += f"[{i+1}] {file_name}\n"

@@ -5,13 +5,13 @@ import json
 # Initialize AWS Bedrock client
 bedrock = boto3.client(
     service_name='bedrock-runtime',
-    region_name='us-west-2'  # Replace with your AWS region
+    region_name='us-east-1'  # Replace with your AWS region
 )
 
 # Initialize Bedrock Knowledge Base client
 bedrock_kb = boto3.client(
     service_name='bedrock-agent-runtime',
-    region_name='us-west-2'  # Replace with your AWS region
+    region_name='us-east-1'  # Replace with your AWS region
 )
 
 def valid_prompt(prompt, model_id):
@@ -65,23 +65,24 @@ def valid_prompt(prompt, model_id):
         print(f"Error validating prompt: {e}")
         return False
 
-def query_knowledge_base(query, kb_id):
+def query_knowledge_base(query, kb_id, model_id):
     try:
-        response = bedrock_kb.retrieve(
-            knowledgeBaseId=kb_id,
-            retrievalQuery={
+        response = bedrock_kb.retrieve_and_generate(
+            input={
                 'text': query
             },
-            retrievalConfiguration={
-                'vectorSearchConfiguration': {
-                    'numberOfResults': 3
+            retrieveAndGenerateConfiguration={
+                'type': 'KNOWLEDGE_BASE',
+                'knowledgeBaseConfiguration': {
+                    'knowledgeBaseId': kb_id,
+                    'modelArn': f'arn:aws:bedrock:us-east-1::foundation-model/{model_id}'
                 }
             }
         )
-        return response['retrievalResults']
+        return response
     except ClientError as e:
         print(f"Error querying Knowledge Base: {e}")
-        return []
+        return {}
 
 def generate_response(prompt, model_id, temperature, top_p):
     try:
