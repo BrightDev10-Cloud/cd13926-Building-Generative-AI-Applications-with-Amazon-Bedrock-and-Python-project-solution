@@ -35,7 +35,7 @@ The goal is to create a Bedrock Knowledge Base that can leverage data stored in 
 
 Before you begin, ensure you have the following:
 
-- AWS CLI installed and configured with appropriate credentials
+- AWS CLI installed and configured with appropriate credentials (e.g., via `aws configure` or `aws sso login`). Ensure these credentials have permissions to upload objects to S3.
 - Terraform installed (version 0.12 or later)
 - Python 3.10 or later
 - pip (Python package manager)
@@ -127,18 +127,54 @@ project-root/
 
 13. Sync the data source in the knowledgebase to make it available to the LLM.
 
-## Using the Scripts
+## Post-Deployment Steps
 
-### S3 Upload Script
+### 0. Install Python Dependencies
 
-The `upload_to_s3.py` script does the following:
-- Uploads all files from the `spec-sheets` folder to a specified S3 bucket
-- Maintains the folder structure in S3
+Before running any Python scripts, ensure all necessary dependencies are installed:
 
-To use it:
-1. Update the `bucket_name` variable in the script with your S3 bucket name.
-2. Optionally, update the `prefix` variable if you want to upload to a specific path in the bucket.
-3. Run `python scripts/upload_to_s3.py`.
+```bash
+pip install -r requirements.txt
+```
+
+Now that your infrastructure is provisioned, follow these steps to prepare your data and run the chat application.
+
+### 1. Prepare and Upload Documents to S3
+
+The `upload_to_s3.py` script uploads your documents to the S3 bucket created by Stack 1, which will then be ingested by the Bedrock Knowledge Base.
+
+1.  **Place Your Documents**: Put all your PDF specification sheets (or other relevant documents) into the `spec-sheets/` folder:
+    ```
+    project-root/
+    └── scripts/
+        └── spec-sheets/
+            ├── your-document-1.pdf
+            └── your-document-2.pdf
+    ```
+2.  **Update S3 Bucket Name in Script**: Open `scripts/upload_s3.py` and update the `bucket_name` variable with the actual name of the S3 bucket provisioned by Stack 1.
+3.  **Run the Upload Script**: Execute the script from your terminal:
+    ```bash
+    python scripts/upload_s3.py
+    ```
+
+### 2. Sync Bedrock Knowledge Base Data Source
+
+After uploading your documents to S3, you need to sync the Bedrock Knowledge Base to ingest them.
+
+1.  **Navigate to Bedrock Console**: Go to the AWS Management Console and search for "Bedrock".
+2.  **Select Knowledge Bases**: In the Bedrock console, click on "Knowledge bases" in the left navigation pane.
+3.  **Choose Your Knowledge Base**: Select your provisioned knowledge base (e.g., `my-bedrock-kb`).
+4.  **Sync Data Source**: Go to the "Data sources" tab, select your data source, and click the "Sync" button. Monitor the status until it shows "Active".
+
+### 3. Run the Chat Application
+
+Once the knowledge base has successfully synced and ingested your documents, you can run the Streamlit chat application.
+
+1.  **Run the App**: Execute the Streamlit application from your terminal:
+    ```bash
+    streamlit run app.py
+    ```
+    This will open the chat application in your web browser, allowing you to interact with your Bedrock Knowledge Base.
 
 ## Complete chat app
 
