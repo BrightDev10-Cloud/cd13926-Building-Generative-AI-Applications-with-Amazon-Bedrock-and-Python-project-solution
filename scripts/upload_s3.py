@@ -37,4 +37,5 @@ if __name__ == "__main__":
     # S3 prefix (optional)
     prefix = "spec-sheets" 
     
-    upload_files_to_s3(folder_path, bucket_name, prefix)
+    upload_files_to_s3(folder_path, bucket_name, prefix) 
+
